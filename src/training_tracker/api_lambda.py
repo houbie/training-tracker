@@ -14,7 +14,7 @@ while not (specification_dir / "openApi.yaml").exists():
 
 app = create_app(
     "test",
-    "OpenAPI.yaml",
+    "openApi.yaml",
     specification_dir=specification_dir,
     base_path="/api",
 )

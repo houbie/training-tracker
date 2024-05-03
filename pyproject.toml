@@ -1,0 +1,98 @@
+[project]
+name = "my-training-tracker"
+description = "A training tracker application"
+authors = [{ name = "Ivo Houbrechts", email = "ivo@houbrechts-it.be" }]
+dependencies = [
+    "aws-lambda-powertools>=2.33",
+    "pynamodb>=6.0",
+    "connexion>=3.0",
+    "mangum>=0.17",
+    "boto3>=1.34",
+    "orjson>=3.9.14",
+]
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dynamic = ["version"]
+
+[tool.pdm]
+version = { source = "scm" }
+[tool.pdm.build]
+package-dir = "src"
+editable-backend = "editables"
+[tool.pdm.dev-dependencies]
+tests = [
+    "pytest>=8.0",
+    "pytest-dynamodb>=2.2",
+    "boto3-stubs [dynamodb] >=1.34",
+    "types-jsonschema>=4.21.0.20240118",
+    "uvicorn>=0.27.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning:connexion",
+    "ignore::DeprecationWarning:boto",
+    "ignore::DeprecationWarning:pynamodb",
+    "ignore::DeprecationWarning:mangum",
+    "ignore:Accessing jsonschema.draft4_format_checker:DeprecationWarning",
+    "ignore:'pkgutil.find_loader':DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 120
+[tool.ruff.lint]
+select = ["ALL"]
+fixable = ["ALL"]
+ignore = ["ISC001", "ANN", "FA", "FBT", "FIX", "TD", "D100", "D102", "D103", "D104", "D105", "D106", "D213", "D203", "T201", "TRY003", "EM102", "COM812", "S602", "S603", "S604", "S605", "S607", "S324", "PD", "TRY300", "PGH003", "PLR2004", "PERF203", "EM101"]
+[tool.ruff.lint.per-file-ignores]
+"src/*" = []
+"tests/*" = ["S101", "S104"]
+"bin/*" = []
+"*__init__.py" = []
+
+[tool.mypy]
+overrides = [
+    { module = "connexion.*", ignore_missing_imports = true },
+]
+
+[tool.pyprojectx]
+env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1" }
+
+[tool.pyprojectx.main]
+requirements = ["pdm", "ruff", "pre-commit", "px-utils", "mypy"]
+post-install = "@setup-pre-commit"
+
+[tool.pyprojectx.jupyter]
+requirements = ["jupyterlab==4.1.1", "ipywidgets==8.12.", "-e ."]
+
+[tool.pyprojectx.aliases]
+setup-pre-commit = "if [ -z $GITHUB_ACTION ]; then pre-commit install; fi" # skip in github actions
+install = "pdm install"
+run = "pdm run"
+outdated = "pdm update --outdated"
+update = "pdm update"
+test = "@run pytest tests"
+verbose-test = "@test  --log-cli-level=INFO"
+start-api = { cmd = "@run python -m tests.run", env = { AWS_PROFILE = "todo-app" } }
+start-ui = "npm start --prefix ui"
+start = "nohup @start-api </dev/null >/dev/null 2>&1 & @start-ui && kill %1"
+
+record = "@run playwright codegen localhost:3000"
+
+format = ["ruff format", "ruff check --select I --fix"]
+lint = ["ruff check"]
+check-mypy = "mypy --no-incremental --python-executable .venv/bin/python src"
+
+fix-ruff = "@lint --fix"
+check = ["@lint", "@check-mypy", "@test"]
+
+export-requirements = ["pxmkdirs generated", "pdm export -o generated/requirements.txt --prod"]
+build-api = ["@install", "@export-requirements", "@check"]
+
+prettier = ["ui/node_modules/.bin/prettier ui/src --write"]
+build-ui = { cmd = ["npm run generate-api && CI=true npm run build"], cwd = "@PROJECT_DIR/ui" }
+
+clean = "pxrm build dist generated .venv .pdm-python .dynamodb .pytest_cache ui/build ui/generated ui/node_modules ui/openapitools.json cdk/cdk.out cdk/node_modules"
+clean-all = ["@clean", "pxrm .pyprojectx"]
+notebook = { cmd = "jupyter lab --notebook-dir=docs -y", env = { AWS_PROFILE = "todo-app" } }

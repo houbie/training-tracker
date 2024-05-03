@@ -1,0 +1,16 @@
+name: Cache
+description: "Cache artefacts for the project"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache pyprojectx
+      uses: actions/cache@v3
+      with:
+        path: .pyprojectx
+        key: pyprojectx-${{ hashFiles('pyproject.toml') }}
+    - name: Cache venv
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ hashFiles('pdm.lock') }}

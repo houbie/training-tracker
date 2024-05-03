@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: My Training Tracker
+  description: List and manage training sessions.
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080/training-tracker'
+    description: Development server
+paths:
+  /training-session:
+    get:
+      summary: List all training sessions
+      operationId: training_tracker.api.get_training_sessions
+      responses:
+        200:
+          description: List of all training sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrainingSession'
+    post:
+      summary: Create a new training session
+      operationId: training_tracker.api.create_training_session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingSession'
+      responses:
+        200:
+          description: The created training session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+  /training-session/{training-sessionId}:
+    parameters:
+      - name: training-sessionId
+        in: path
+        description: The id of the training session
+        required: true
+        schema:
+          type: string
+        example: 600ea990-5630-4dda-b40f-087a7cc2290d
+    get:
+      summary: Get a training-session by id
+      operationId: training_tracker.api.get_training_session
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+    put:
+      summary: Save a training-session
+      operationId: training_tracker.api.save_training_session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingSession'
+      responses:
+        200:
+          description: The updated training session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+    delete:
+      summary: Delete a training-session
+      operationId: training_tracker.api.delete_training_session
+      responses:
+        204:
+          description: Training session deleted
+components:
+  schemas:
+    TrainingSession:
+      description: A training session
+      required:
+        - title
+        - discipline
+      type: object
+      properties:
+        id:
+          description: unique training-session ID
+          type: string
+          readOnly: true
+          example: 600ea990-5630-4dda-b40f-087a7cc2290d
+        title:
+          description: short description of the training session
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: Morning run
+        discipline:
+          description: the sport discipline of the training session
+          type: string
+          enum:
+            - running
+            - cycling
+            - swimming
+        distance:
+          description: the distance covered during the training session in meters
+          type: integer
+          nullable: true
+          example: 5000
+          minimum: 1
+        date:
+          description: the date of the training session
+          type: string
+          format: date
+          example: 2024-03-21
+        version:
+          description: the version of the training session record that gets incremented on each update
+          type: integer
+          readOnly: true

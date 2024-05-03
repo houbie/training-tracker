@@ -1,0 +1,22 @@
+name: Build
+description: "Build the project"
+
+inputs:
+  environment:
+    # frontend build is environment dependent
+    description: "Build for the target environment"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build API
+      shell: bash
+      run: ./pw build-api
+
+    - name: Npm install UI
+      shell: bash
+      run: cd ui && npm ci
+    - name: Build UI
+      shell: bash
+      run: ./pw build-ui

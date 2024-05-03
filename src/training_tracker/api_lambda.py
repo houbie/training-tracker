@@ -7,10 +7,10 @@ from training_tracker.application_factory import create_app, create_handler
 logger = Logger()
 
 specification_dir = Path(__file__).parent
-while not (specification_dir / "openAPI.yaml").exists():
+while not (specification_dir / "openApi.yaml").exists():
     specification_dir = specification_dir.parent
     if specification_dir == Path("/"):
-        raise FileNotFoundError("openAPI.yaml not found")
+        raise FileNotFoundError("openApi.yaml not found")
 
 app = create_app(
     "test",

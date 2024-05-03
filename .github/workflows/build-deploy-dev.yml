@@ -10,8 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ENVIRONMENT: dev
 
     steps:
       - uses: actions/checkout@v4
@@ -28,9 +26,6 @@ jobs:
 
       - name: Build
         uses: ./.github/actions/build
-        with:
-          environment: ${{ env.ENVIRONMENT }}
 
-      - name: Deploy API and UI to ${{ env.ENVIRONMENT }}
-        if: github.event_name != 'pull_request'
-        run: ./pw deploy-both-${{ env.ENVIRONMENT }}
+#      - name: Deploy API and UI
+#        run: ./pw deploy-both

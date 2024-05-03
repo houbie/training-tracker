@@ -13,7 +13,7 @@ prepare_dynamodb_local(Path(__file__).parent / "../.dynamodb")
 def api_client():
     app = application_factory.create_app(
         "test",
-        "openAPI.yaml",
+        "openApi.yaml",
         Path(__file__).parent.parent,
         base_path="/api",
     )

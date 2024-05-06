@@ -9,7 +9,7 @@ function App() {
     <>
       <AppBar position="static">
         <Toolbar>
-          <h1>My Training Sessions</h1>
+          <h1>Training Tracker</h1>
         </Toolbar>
       </AppBar>
       <TrainingSessions />

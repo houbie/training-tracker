@@ -1,5 +1,5 @@
 [project]
-name = "my-training-tracker"
+name = "training-tracker"
 description = "A training tracker application"
 authors = [{ name = "Ivo Houbrechts", email = "ivo@houbrechts-it.be" }]
 dependencies = [

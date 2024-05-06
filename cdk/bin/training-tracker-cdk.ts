@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+import 'source-map-support/register'
+import {TrainingTrackerApi} from '../lib/training-tracker-api'
+import {TrainingTrackerUi} from '../lib/training-tracker-ui'
+import {App} from 'aws-cdk-lib'
+import {TrainingSessionsTables} from '../lib/training-tracker-tables'
+
+const app = new App()
+
+const ENV = app.node.tryGetContext('env') || 'V1'
+
+new TrainingSessionsTables(app, `TrainingSessionsTables${ENV}`, {
+    env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+
+new TrainingTrackerApi(app, `TrainingSessionsApi${ENV}`, {
+    env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})
+
+new TrainingTrackerUi(app, `TrainingSessionsUI${ENV}`, {
+    env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+})

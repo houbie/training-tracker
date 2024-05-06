@@ -1,4 +1,4 @@
-# My Training Tracker
+# Training Tracker
 A simple demo application that allows users to track their training sessions.
 
 The application is used to:

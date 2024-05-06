@@ -167,3 +167,4 @@ dynamodb-local-metadata.json
 /ui/src/generated/
 
 !.github/actions/build
+!cdk/lib

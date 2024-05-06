@@ -1,5 +1,5 @@
 {
-  "name": "my-training-tracker",
+  "name": "training-tracker",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "generate-api": "openapi-generator-cli generate -g typescript-axios -o src/generated -i ../openApi.yaml",
-    "build": "npm run generate-api && env-cmd -f .env.production react-scripts build"
+    "build": "npm run generate-api && env-cmd -f .env.production react-scripts build",
+    "prettier": "prettier src -w"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

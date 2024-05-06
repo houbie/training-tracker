@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: My Training Tracker
+  title: Training Tracker
   description: List and manage training sessions.
   version: 1.0.0
 servers:

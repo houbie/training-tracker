@@ -27,5 +27,5 @@ jobs:
       - name: Build
         uses: ./.github/actions/build
 
-#      - name: Deploy API and UI
-#        run: ./pw deploy-both
+      - name: Deploy API and UI
+        run: ./pw deploy-both

@@ -3,7 +3,7 @@ import { CfnOutput, StackProps } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { EnvStack } from './common/env-stack'
 
-export class TrainingSessionsTables extends EnvStack {
+export class TrainingTrackerTables extends EnvStack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
 

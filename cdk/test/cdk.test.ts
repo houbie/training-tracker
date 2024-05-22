@@ -7,7 +7,7 @@ import * as ApiStack from '../lib/training-tracker-api'
 test('Dynamo Tables stack', () => {
   const app = new cdk.App()
   // WHEN
-  const stack = new TablesStack.TrainingSessionsTables(app, 'TrainingSessionsTablesStackTst')
+  const stack = new TablesStack.TrainingTrackerTables(app, 'TrainingSessionsTablesStackTst')
   // THEN
   const template = Template.fromStack(stack)
 

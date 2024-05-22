@@ -26,7 +26,7 @@ export function createPythonLambda(
     timeout: Duration.seconds(90),
     memorySize: 1024,
     code: stack.createCodeAsset(),
-    handler: `${snake(Stack.of(stack).stackName.slice(0, -3))}.${snake(name)}.handler`,
+    handler: `${snake(Stack.of(stack).stackName.slice(0, -6))}.${snake(name)}.handler`,
     layers: stack.lambdaLayers,
     environment: {
       ENVIRONMENT: env,

@@ -57,7 +57,7 @@ overrides = [
 ]
 
 [tool.pyprojectx]
-env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1" }
+env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1", AWS_PROFILE = "training-tracker" }
 
 [tool.pyprojectx.main]
 requirements = ["pdm", "ruff", "pre-commit", "px-utils", "mypy"]
@@ -95,4 +95,12 @@ build-ui = { cmd = ["npm run generate-api && CI=true npm run build"], cwd = "@PR
 
 clean = "pxrm build dist generated .venv .pdm-python .dynamodb .pytest_cache ui/build ui/generated ui/node_modules ui/openapitools.json cdk/cdk.out cdk/node_modules"
 clean-all = ["@clean", "pxrm .pyprojectx"]
+
+bootstrap-cdk = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk bootstrap", cwd = "@PROJECT_DIR/cdk" }
+
+deploy-tables = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerTablesV1a --context env=V1a --outputs-file cdk.out/tables-stack-output.json", cwd = "@PROJECT_DIR/cdk" }
+deploy-api = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerApiV1a --context env=V1a --outputs-file cdk.out/api-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
+deploy-ui = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerUiV1a --context env=V1a --outputs-file cdk.out/ui-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
+deploy-both = ["@deploy-api", "@deploy-ui"]
+
 notebook = { cmd = "jupyter lab --notebook-dir=docs -y", env = { AWS_PROFILE = "todo-app" } }

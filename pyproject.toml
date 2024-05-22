@@ -100,7 +100,7 @@ bootstrap-cdk = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk boots
 
 deploy-tables = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerTablesV1a --context env=V1a --outputs-file cdk.out/tables-stack-output.json", cwd = "@PROJECT_DIR/cdk" }
 deploy-api = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerApiV1a --context env=V1a --outputs-file cdk.out/api-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
-deploy-ui = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerUiV1a --context env=V1a --outputs-file cdk.out/ui-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
+deploy-ui = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerUIV1a --context env=V1a --outputs-file cdk.out/ui-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
 deploy-both = ["@deploy-api", "@deploy-ui"]
 
 notebook = { cmd = "jupyter lab --notebook-dir=docs -y" }

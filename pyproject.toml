@@ -57,7 +57,7 @@ overrides = [
 ]
 
 [tool.pyprojectx]
-env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1", AWS_PROFILE = "training-tracker" }
+env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1" }
 
 [tool.pyprojectx.main]
 requirements = ["pdm", "ruff", "pre-commit", "px-utils", "mypy"]
@@ -74,7 +74,7 @@ outdated = "pdm update --outdated"
 update = "pdm update"
 test = "@run pytest tests"
 verbose-test = "@test  --log-cli-level=INFO"
-start-api = { cmd = "@run python -m tests.run", env = { AWS_PROFILE = "todo-app" } }
+start-api = { cmd = "@run python -m tests.run" }
 start-ui = "npm start --prefix ui"
 start = "nohup @start-api </dev/null >/dev/null 2>&1 & @start-ui && kill %1"
 
@@ -103,4 +103,4 @@ deploy-api = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy T
 deploy-ui = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerUiV1a --context env=V1a --outputs-file cdk.out/ui-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
 deploy-both = ["@deploy-api", "@deploy-ui"]
 
-notebook = { cmd = "jupyter lab --notebook-dir=docs -y", env = { AWS_PROFILE = "todo-app" } }
+notebook = { cmd = "jupyter lab --notebook-dir=docs -y" }

@@ -38,15 +38,18 @@ export class PythonStack extends EnvStack {
       const result = child_process.spawnSync('pip3', [
         'install',
         '--no-deps',
-        '-r',
-        '--platform manylinux2014_aarch64',
-        '--implementation cp',
+        '--platform',
+        'manylinux2014_aarch64',
+        '--implementation',
+        'cp',
         '--only-binary=:all:',
+        '-r',
         requirementsFile.toString(),
         '-t',
         pythonLibsDir.toString(),
       ])
       if (result.status) {
+        console.error(result.stderr.toString())
         throw new Error(`pip3 install exited with non-zero code: ${result.status}`)
       }
     }

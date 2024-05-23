@@ -18,6 +18,8 @@ export class TrainingTrackerApi extends PythonStack {
       TRAINING_SESSIONS_TABLE: trainingSessionsTable.tableName,
     })
 
+    trainingSessionsTable.grantReadWriteData(apiLambda)
+
     const apiGw = new RestApiWithDefaults(this, `TrainingTrackerApi${this.env()}`, {
       throttlingRateLimit: 2,
       throttlingBurstLimit: 5,

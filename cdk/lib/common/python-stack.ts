@@ -35,7 +35,7 @@ export class PythonStack extends EnvStack {
 
     if (!fs.existsSync(pythonLibsDir)) {
       console.info('running pip install...')
-      const result = child_process.spawnSync('pip3', [
+      let result = child_process.spawnSync('pip3', [
         'install',
         '--no-deps',
         '--platform',
@@ -51,6 +51,11 @@ export class PythonStack extends EnvStack {
       if (result.status) {
         console.error(result.stderr.toString())
         throw new Error(`pip3 install exited with non-zero code: ${result.status}`)
+      }
+      result = child_process.spawnSync('find . | grep -E "(/__pycache__$|\\.pyc$|\\.pyo$)" | xargs rm -rf', [], {shell: true, cwd: pythonLibsDir})
+      if (result.status) {
+        console.error(result.stderr.toString())
+        throw new Error(`clear pycache exited with non-zero code: ${result.status}`)
       }
     }
     const layerId = `${this.stackName}-python-libs`

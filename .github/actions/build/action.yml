@@ -13,4 +13,4 @@ runs:
       run: cd ui && npm ci
     - name: Build UI
       shell: bash
-      run: ./pw build-ui
+      run: ./pw build-ui-aws-dev

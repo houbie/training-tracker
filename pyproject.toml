@@ -92,6 +92,7 @@ build-api = ["@install", "@export-requirements", "@check"]
 
 prettier = ["ui/node_modules/.bin/prettier ui/src --write"]
 build-ui = { cmd = ["npm run generate-api && CI=true npm run build"], cwd = "@PROJECT_DIR/ui" }
+build-ui-aws-dev = { cmd = ["npm run generate-api && CI=true npm run build:aws-dev"], cwd = "@PROJECT_DIR/ui" }
 
 clean = "pxrm build dist generated .venv .pdm-python .dynamodb .pytest_cache ui/build ui/generated ui/node_modules ui/openapitools.json cdk/cdk.out cdk/node_modules"
 clean-all = ["@clean", "pxrm .pyprojectx"]

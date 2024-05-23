@@ -7,10 +7,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # Setting an environment variable with the value of a configuration variable
+  REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    environment: aws-dev
     steps:
       - uses: actions/checkout@v4
 

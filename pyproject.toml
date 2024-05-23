@@ -49,7 +49,6 @@ ignore = ["ISC001", "ANN", "FA", "FBT", "FIX", "TD", "D100", "D102", "D103", "D1
 "src/*" = []
 "tests/*" = ["S101", "S104"]
 "bin/*" = []
-"cdk/*" = ["INP001"]
 "*__init__.py" = []
 
 [tool.mypy]

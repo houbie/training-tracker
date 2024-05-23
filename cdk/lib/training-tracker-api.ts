@@ -18,7 +18,10 @@ export class TrainingTrackerApi extends PythonStack {
       TRAINING_SESSIONS_TABLE: trainingSessionsTable.tableName,
     })
 
-    const apiGw = new RestApiWithDefaults(this, `TrainingTrackerApi${this.env()}`)
+    const apiGw = new RestApiWithDefaults(this, `TrainingTrackerApi${this.env()}`, {
+      throttlingRateLimit: 2,
+      throttlingBurstLimit: 5,
+    })
 
     apiGw.root.addProxy({
       defaultIntegration: new LambdaIntegration(apiLambda),

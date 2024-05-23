@@ -52,10 +52,10 @@ export class PythonStack extends EnvStack {
         console.error(result.stderr.toString())
         throw new Error(`pip3 install exited with non-zero code: ${result.status}`)
       }
-      result = child_process.spawnSync('python', ['-m', 'lib.common.precompile', pythonLibsDir.toString()])
+      result = child_process.spawnSync('find . | grep -E "(/__pycache__$|\\.pyc$|\\.pyo$)" | xargs rm -rf', [], {shell: true, cwd: pythonLibsDir})
       if (result.status) {
         console.error(result.stderr.toString())
-        throw new Error(`pre-compilation exited non-zero code: ${result.status}`)
+        throw new Error(`clear pycache exited with non-zero code: ${result.status}`)
       }
     }
     const layerId = `${this.stackName}-python-libs`

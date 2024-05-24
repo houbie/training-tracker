@@ -43,6 +43,7 @@ export class PythonStack extends EnvStack {
         '--implementation',
         'cp',
         '--only-binary=:all:',
+        '--no-compile',
         '-r',
         requirementsFile.toString(),
         '-t',
@@ -52,6 +53,33 @@ export class PythonStack extends EnvStack {
         console.error(result.stderr.toString())
         throw new Error(`pip3 install exited with non-zero code: ${result.status}`)
       }
+      console.info('pre-compiling python files...')
+      result = child_process.spawnSync('python', [
+        '-m',
+        'compileall',
+        '-b',
+        '--invalidation-mode',
+        'unchecked-hash',
+        '-o',
+        '2',
+        pythonLibsDir.toString(),
+      ])
+      if (result.status) {
+        console.error(result.stderr.toString())
+        throw new Error(`pre-compilation exited non-zero code: ${result.status}`)
+      }
+      console.info('removing python files...')
+      fs.readdirSync(pythonLibsDir, { recursive: true }).forEach((file) => {
+        if (file.toString().endsWith('.py')) {
+          fs.unlinkSync(path.join(pythonLibsDir, file.toString()))
+        }
+      })
+      console.info('removing boto...')
+      fs.readdirSync(pythonLibsDir).forEach((file) => {
+        if (file.toString().startsWith('botocore') || file.toString().startsWith('boto3')) {
+          fs.removeSync(path.join(pythonLibsDir, file.toString()))
+        }
+      })
     }
     const layerId = `${this.stackName}-python-libs`
     const layerCode = Code.fromAsset(destinationDir)

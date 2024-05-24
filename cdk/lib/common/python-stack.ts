@@ -43,6 +43,7 @@ export class PythonStack extends EnvStack {
         '--implementation',
         'cp',
         '--only-binary=:all:',
+        '--no-compile',
         '-r',
         requirementsFile.toString(),
         '-t',

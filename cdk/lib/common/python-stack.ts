@@ -43,7 +43,6 @@ export class PythonStack extends EnvStack {
         '--implementation',
         'cp',
         '--only-binary=:all:',
-        '--no-compile',
         '-r',
         requirementsFile.toString(),
         '-t',
@@ -52,11 +51,6 @@ export class PythonStack extends EnvStack {
       if (result.status) {
         console.error(result.stderr.toString())
         throw new Error(`pip3 install exited with non-zero code: ${result.status}`)
-      }
-      result = child_process.spawnSync('find . | grep -E "(/__pycache__$|\\.pyc$|\\.pyo$)" | xargs rm -rf', [], {shell: true, cwd: pythonLibsDir})
-      if (result.status) {
-        console.error(result.stderr.toString())
-        throw new Error(`clear pycache exited with non-zero code: ${result.status}`)
       }
     }
     const layerId = `${this.stackName}-python-libs`

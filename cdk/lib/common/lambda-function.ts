@@ -2,8 +2,11 @@ import { Duration, Stack } from 'aws-cdk-lib'
 import { Architecture, Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { PythonStack } from './python-stack'
 import { kebab, snake, title } from './string-utils'
+import * as fs from 'fs-extra'
+import * as path from 'path'
 
-const DEFAULT_RUNTIME = Runtime.PYTHON_3_12
+const pythonVersion = fs.readFileSync(path.join('..', '.python-version'), 'utf8').trim().replace('.', '_')
+const runtime = Runtime.ALL.find((r) => r.name === `PYTHON_${pythonVersion}`) || Runtime.PYTHON_3_12
 const DEFAULT_ARCHITECTURE = Architecture.ARM_64
 
 /**
@@ -21,7 +24,7 @@ export function createPythonLambda(
 ): Function {
   const defaults: FunctionProps = {
     functionName: `${kebab(name)}${env}`,
-    runtime: DEFAULT_RUNTIME,
+    runtime: runtime,
     architecture: DEFAULT_ARCHITECTURE,
     timeout: Duration.seconds(90),
     memorySize: 1024,

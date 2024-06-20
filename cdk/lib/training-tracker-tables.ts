@@ -11,6 +11,7 @@ export class TrainingTrackerTables extends EnvStack {
       tableName: `training-sessions-${this.env()}`,
       partitionKey: { name: 'id', type: AttributeType.STRING },
       billingMode: BillingMode.PROVISIONED,
+      timeToLiveAttribute: 'expirationDate',
       readCapacity: 1,
       writeCapacity: 1,
     })

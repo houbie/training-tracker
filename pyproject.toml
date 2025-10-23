@@ -1,108 +1,61 @@
 [project]
 name = "training-tracker"
-description = "A training tracker application"
-authors = [{ name = "Ivo Houbrechts", email = "ivo@houbrechts-it.be" }]
+version = "1.0.0"
+description = "API for tracking training sessions"
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = [
-    "aws-lambda-powertools>=2.33",
-    "pynamodb>=6.0",
-    "connexion>=3.0",
-    "mangum>=0.17",
-    "boto3>=1.34",
-    "orjson>=3.9.14",
+    "fastapi>=0.119",
+    "uvicorn[standard]>=0.38",
+    "pydantic>=2.12",
+    "python-dateutil>=2.9",
 ]
-requires-python = ">=3.12"
-license = { text = "MIT" }
-dynamic = ["version"]
 
-[tool.pdm]
-version = { source = "scm" }
-[tool.pdm.build]
-package-dir = "src"
-editable-backend = "editables"
-[tool.pdm.dev-dependencies]
-tests = [
-    "pytest>=8.0",
-    "pytest-dynamodb>=2.2",
-    "boto3-stubs [dynamodb] >=1.34",
-    "types-jsonschema>=4.21.0.20240118",
-    "uvicorn>=0.27.1",
+[dependency-groups]
+dev = [
+    "requests>=2.32",
+    "pytest>=8.4",
+    "httpx>=0.28",
 ]
+
+[project.scripts]
+training-tracker = "training_tracker.main:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/training_tracker"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning:connexion",
-    "ignore::DeprecationWarning:boto",
-    "ignore::DeprecationWarning:pynamodb",
-    "ignore::DeprecationWarning:mangum",
-    "ignore:Accessing jsonschema.draft4_format_checker:DeprecationWarning",
-    "ignore:'pkgutil.find_loader':DeprecationWarning",
-]
 
 [tool.ruff]
 line-length = 120
 [tool.ruff.lint]
-select = ["ALL"]
-fixable = ["ALL"]
-ignore = ["ISC001", "ANN", "FA", "FBT", "FIX", "TD", "D100", "D102", "D103", "D104", "D105", "D106", "D213", "D203", "T201", "TRY003", "EM102", "COM812", "S602", "S603", "S604", "S605", "S607", "S324", "PD", "TRY300", "PGH003", "PLR2004", "PERF203", "EM101"]
-[tool.ruff.lint.per-file-ignores]
-"src/*" = []
-"tests/*" = ["S101", "S104"]
-"bin/*" = []
-"*__init__.py" = []
+fixable= ["ALL"]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["N803", "N815"]
 
-[tool.mypy]
-overrides = [
-    { module = "connexion.*", ignore_missing_imports = true },
-]
-
-[tool.pyprojectx]
-env = { AWS_REGION = "eu-west-1", AWS_DEFAULT_REGION = "eu-west-1" }
 
 [tool.pyprojectx.main]
-requirements = ["pdm", "ruff", "pre-commit", "px-utils", "mypy"]
-post-install = "@setup-pre-commit"
-
-[tool.pyprojectx.jupyter]
-requirements = ["jupyterlab==4.1.1", "ipywidgets==8.12.", "-e ."]
+requirements = ["uv", "ruff", "pre-commit", "px-utils", "mypy", "datamodel-code-generator"]
+post-install = "pre-commit install"
 
 [tool.pyprojectx.aliases]
-setup-pre-commit = "if [ -z $GITHUB_ACTION ]; then pre-commit install; fi" # skip in github actions
-install = "pdm install"
-run = "pdm run"
-outdated = "pdm update --outdated"
-update = "pdm update"
-test = "@run pytest tests"
-verbose-test = "@test  --log-cli-level=INFO"
-start-api = { cmd = "@run python -m tests.run" }
-start-ui = "npm start --prefix ui"
-start = "nohup @start-api </dev/null >/dev/null 2>&1 & @start-ui && kill %1"
+install = "uv sync"
+update = ["uv lock --upgrade", "@install"]
+outdated = "uv pip list --outdated"
+run = "uv run"
+start = "uv run training-tracker"
 
-record = "@run playwright codegen localhost:3000"
-
+test = "@run pytest"
 format = ["ruff format", "ruff check --select I --fix"]
-lint = ["ruff check"]
 check-mypy = "mypy --no-incremental --python-executable .venv/bin/python src"
-
+lint = "ruff check src tests"
 fix-ruff = "@lint --fix"
-check = ["@lint", "@check-mypy", "@test"]
 
-export-requirements = ["pxmkdirs generated", "pdm export -o generated/requirements.txt --prod"]
-build-api = ["@install", "@export-requirements", "@check"]
+build = ["@install", "@lint", "@check-mypy", "@test"]
 
-prettier = ["ui/node_modules/.bin/prettier ui/src --write"]
-build-ui = { cmd = ["npm run generate-api && CI=true npm run build"], cwd = "@PROJECT_DIR/ui" }
-build-ui-aws-dev = { cmd = ["npm run generate-api && CI=true npm run build:aws-dev"], cwd = "@PROJECT_DIR/ui" }
-
-clean = "pxrm build dist generated .venv .pdm-python .dynamodb .pytest_cache ui/build ui/generated ui/node_modules ui/openapitools.json cdk/cdk.out cdk/node_modules"
-clean-all = ["@clean", "pxrm .pyprojectx"]
-
-bootstrap-cdk = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk bootstrap", cwd = "@PROJECT_DIR/cdk" }
-
-deploy-tables = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerTablesV1a --context env=V1a --outputs-file cdk.out/tables-stack-output.json", cwd = "@PROJECT_DIR/cdk" }
-deploy-api = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerApiV1a --context env=V1a --outputs-file cdk.out/api-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
-synth-api = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk synth TrainingTrackerApiV1a --context env=V1a --outputs-file cdk.out/api-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
-deploy-ui = { cmd = "npm i && npm run build && ./node_modules/.bin/cdk deploy TrainingTrackerUIV1a --context env=V1a --outputs-file cdk.out/ui-stack-output.json --require-approval never", cwd = "@PROJECT_DIR/cdk" }
-deploy-both = ["@deploy-api", "@deploy-ui"]
-
-notebook = { cmd = "jupyter lab --notebook-dir=docs -y" }
+clean = "pxrm .venv build generated dist .coverage .mypy_cache .pytest_cache .ruff_cache"

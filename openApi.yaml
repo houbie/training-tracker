@@ -1,119 +1,654 @@
 openapi: 3.0.3
 info:
-  title: Training Tracker
-  description: List and manage training sessions.
+  title: Training Sessions API
+  description: API for tracking training sessions
   version: 1.0.0
+
 servers:
-  - url: 'http://localhost:8080/training-tracker'
+  - url: http://localhost:8080/v1
     description: Development server
+
+tags:
+  - name: athletes
+    description: Operations related to athletes
+  - name: training-sessions
+    description: Operations related to training sessions
+
 paths:
-  /training-session:
+  /athletes:
     get:
-      summary: List all training sessions
-      operationId: training_tracker.api.get_training_sessions
+      tags:
+        - athletes
+      summary: List all athletes
+      description: Retrieve a list of all athletes
+      operationId: listAthletes
       responses:
-        200:
-          description: List of all training sessions
+        '200':
+          description: List of athletes
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainingSession'
+                  $ref: '#/components/schemas/Athlete'
     post:
-      summary: Create a new training session
-      operationId: training_tracker.api.create_training_session
+      tags:
+        - athletes
+      summary: Create a new athlete
+      description: Add a new athlete to the system
+      operationId: createAthlete
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TrainingSession'
-      responses:
-        200:
-          description: The created training session
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainingSession'
-  /training-session/{training-sessionId}:
-    parameters:
-      - name: training-sessionId
-        in: path
-        description: The id of the training session
         required: true
-        schema:
-          type: string
-        example: 600ea990-5630-4dda-b40f-087a7cc2290d
-    get:
-      summary: Get a training-session by id
-      operationId: training_tracker.api.get_training_session
-      responses:
-        200:
-          description: Ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainingSession'
-    put:
-      summary: Save a training-session
-      operationId: training_tracker.api.save_training_session
-      requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrainingSession'
+              $ref: '#/components/schemas/AthleteInput'
       responses:
-        200:
-          description: The updated training session
+        '201':
+          description: Athlete created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Athlete'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /athletes/{id}:
+    get:
+      tags:
+        - athletes
+      summary: Get athlete by ID
+      description: Retrieve details of a single athlete
+      operationId: getAthleteById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the athlete
+      responses:
+        '200':
+          description: Athlete details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Athlete'
+        '404':
+          description: Athlete not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - athletes
+      summary: Update an athlete
+      description: Update an existing athlete's information
+      operationId: updateAthlete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the athlete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AthleteInput'
+      responses:
+        '200':
+          description: Athlete updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Athlete'
+        '404':
+          description: Athlete not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - athletes
+      summary: Delete an athlete
+      description: Remove an athlete from the system. Optionally cascade delete their training sessions.
+      operationId: deleteAthlete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the athlete
+        - name: cascade
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: If true, also delete all training sessions for this athlete
+      responses:
+        '204':
+          description: Athlete deleted successfully
+        '400':
+          description: Cannot delete athlete (has training sessions and cascade is false)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "ATHLETE_HAS_SESSIONS"
+                  message:
+                    type: string
+                    example: "Cannot delete athlete. They have 5 training session(s). Use cascade=true to delete athlete and all their sessions."
+                  sessionCount:
+                    type: integer
+                    example: 5
+        '404':
+          description: Athlete not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /athletes/{id}/statistics:
+    get:
+      tags:
+        - athletes
+      summary: Get athlete statistics
+      description: Retrieve aggregated statistics for a specific athlete's training sessions
+      operationId: getAthleteStatistics
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the athlete
+      responses:
+        '200':
+          description: Successful response with athlete statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+        '404':
+          description: Athlete not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /training-sessions:
+    get:
+      tags:
+        - training-sessions
+      summary: List all training sessions
+      description: Retrieve a list of all training sessions with optional filtering
+      operationId: listTrainingSessions
+      parameters:
+        - name: startDate
+          in: query
+          description: Filter sessions on or after this date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Filter sessions on or before this date (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: athleteId
+          in: query
+          description: Filter sessions by athlete ID
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of sessions to return
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of sessions to skip for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Successful response with list of training sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrainingSession'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - training-sessions
+      summary: Create a new training session
+      description: Add a new training session to the tracker
+      operationId: createTrainingSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingSessionInput'
+            examples:
+              running:
+                summary: Running session
+                value:
+                  date: "2025-10-23"
+                  duration: 45
+                  distance: 8.5
+                  notes: "Morning run with intervals"
+      responses:
+        '201':
+          description: Training session created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainingSession'
-    delete:
-      summary: Delete a training-session
-      operationId: training_tracker.api.delete_training_session
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /training-sessions/{id}:
+    get:
+      tags:
+        - training-sessions
+      summary: Get a specific training session
+      description: Retrieve details of a single training session by ID
+      operationId: getTrainingSession
+      parameters:
+        - name: id
+          in: path
+          description: Training session ID
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
-        204:
-          description: Training session deleted
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+        '404':
+          description: Training session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - training-sessions
+      summary: Update a training session
+      description: Update an existing training session
+      operationId: updateTrainingSession
+      parameters:
+        - name: id
+          in: path
+          description: Training session ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingSessionInput'
+      responses:
+        '200':
+          description: Training session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Training session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - training-sessions
+      summary: Delete a training session
+      description: Remove a training session from the tracker
+      operationId: deleteTrainingSession
+      parameters:
+        - name: id
+          in: path
+          description: Training session ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Training session deleted successfully
+        '404':
+          description: Training session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /training-sessions/statistics:
+    get:
+      tags:
+        - training-sessions
+      summary: Get training statistics
+      description: Retrieve aggregated statistics for training sessions
+      operationId: getTrainingStatistics
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date for statistics (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for statistics (YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response with statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
-    TrainingSession:
-      description: A training session
-      required:
-        - title
-        - discipline
+    Athlete:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
-          description: unique training-session ID
           type: string
-          readOnly: true
-          example: 600ea990-5630-4dda-b40f-087a7cc2290d
-        title:
-          description: short description of the training session
+          description: Unique identifier for the athlete
+          example: "athlete-123"
+        name:
           type: string
-          minLength: 3
-          maxLength: 200
-          example: Morning run
-        discipline:
-          description: the sport discipline of the training session
+          description: Name of the athlete
+          example: "John Doe"
+
+    AthleteInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
           type: string
-          enum:
-            - running
-            - cycling
-            - swimming
-        distance:
-          description: the distance covered during the training session in meters
-          type: integer
-          nullable: true
-          example: 5000
-          minimum: 1
+          description: Name of the athlete
+          example: "John Doe"
+
+    TrainingSession:
+      type: object
+      required:
+        - id
+        - athlete_id
+        - athlete_name
+        - date
+        - duration
+        - distance
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the training session
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        athlete_id:
+          type: string
+          description: ID of the athlete
+          example: "athlete-123"
+        athlete_name:
+          type: string
+          description: Name of the athlete
+          example: "John Doe"
         date:
-          description: the date of the training session
           type: string
           format: date
-          example: 2024-03-21
-        version:
-          description: the version of the training session record that gets incremented on each update
+          description: Date of the training session (YYYY-MM-DD)
+          example: "2025-10-23"
+        duration:
+          type: number
+          format: float
+          description: Duration of the session in minutes
+          minimum: 0
+          example: 45.5
+        distance:
+          type: number
+          format: float
+          description: Distance covered in kilometers
+          minimum: 0
+          example: 8.5
+        notes:
+          type: string
+          description: Additional notes or comments about the session
+          maxLength: 1000
+          example: "Great session with intervals"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the session was created
+          example: "2025-10-23T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the session was last updated
+          example: "2025-10-23T10:30:00Z"
+
+    TrainingSessionInput:
+      type: object
+      required:
+        - athlete_id
+        - date
+        - duration
+        - distance
+      properties:
+        athlete_id:
+          type: string
+          description: ID of the athlete
+          example: "athlete-123"
+        date:
+          type: string
+          format: date
+          description: Date of the training session (YYYY-MM-DD)
+          example: "2025-10-23"
+        duration:
+          type: number
+          format: float
+          description: Duration of the session in minutes
+          minimum: 0
+          example: 45.5
+        distance:
+          type: number
+          format: float
+          description: Distance covered in kilometers
+          minimum: 0
+          example: 8.5
+        notes:
+          type: string
+          description: Additional notes or comments about the session
+          maxLength: 1000
+          example: "Great session with intervals"
+
+    Pagination:
+      type: object
+      properties:
+        total:
           type: integer
-          readOnly: true
+          description: Total number of items
+          example: 150
+        limit:
+          type: integer
+          description: Maximum number of items per page
+          example: 50
+        offset:
+          type: integer
+          description: Number of items skipped
+          example: 0
+        hasMore:
+          type: boolean
+          description: Whether there are more items available
+          example: true
+
+    Statistics:
+      type: object
+      properties:
+        totalSessions:
+          type: integer
+          description: Total number of training sessions
+          example: 42
+        totalDuration:
+          type: number
+          format: float
+          description: Total duration in minutes
+          example: 2100.5
+        totalDistance:
+          type: number
+          format: float
+          description: Total distance in kilometers
+          example: 356.8
+        averageDuration:
+          type: number
+          format: float
+          description: Average duration per session in minutes
+          example: 50.0
+        averageDistance:
+          type: number
+          format: float
+          description: Average distance per session in kilometers
+          example: 8.5
+        averagePace:
+          type: number
+          format: float
+          description: Average pace in minutes per kilometer
+          example: 5.88
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid date format"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true

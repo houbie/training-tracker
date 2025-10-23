@@ -2,11 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-import uvicorn
 from fastapi import FastAPI
 
 from training_tracker.athlete_routes import router as athlete_router
-from training_tracker.storage import initialize_example_data
+from training_tracker.database import initialize_example_data
 from training_tracker.training_session_routes import router as training_session_router
 
 
@@ -41,12 +40,3 @@ async def root():
         "description": "API for tracking training sessions",
         "docs": "/docs",
     }
-
-
-def main():
-    """Entry point for running the application."""
-    uvicorn.run(app, host="0.0.0.0", port=8080)
-
-
-if __name__ == "__main__":
-    main()

@@ -6,20 +6,18 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.119",
-    "uvicorn[standard]>=0.38",
     "pydantic>=2.12",
     "python-dateutil>=2.9",
+    "boto3>=1.35",
 ]
 
 [dependency-groups]
 dev = [
-    "requests>=2.32",
     "pytest>=8.4",
-    "httpx>=0.28",
+    "moto[dynamodb]>=5.1",
+    "uvicorn[standard]>=0.38",
+    "httpx>=0.28.1",
 ]
-
-[project.scripts]
-training-tracker = "training_tracker.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]
@@ -37,7 +35,13 @@ line-length = 120
 fixable= ["ALL"]
 select = ["E", "F", "I", "N", "W"]
 ignore = ["N803", "N815"]
+[tool.ruff.lint.per-file-ignores]
+"tests/start.py" = ["E402"]
 
+[tool.mypy]
+overrides = [
+    { module = "boto3.*", ignore_missing_imports = true }
+]
 
 [tool.pyprojectx.main]
 requirements = ["uv", "ruff", "pre-commit", "px-utils", "mypy", "datamodel-code-generator"]
@@ -48,7 +52,7 @@ install = "uv sync"
 update = ["uv lock --upgrade", "@install"]
 outdated = "uv pip list --outdated"
 run = "uv run"
-start = "uv run training-tracker"
+start = "uv run python -m tests.start"
 
 test = "@run pytest"
 format = ["ruff format", "ruff check --select I --fix"]

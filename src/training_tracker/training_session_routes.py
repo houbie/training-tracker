@@ -7,14 +7,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
 
-from training_tracker.models import (
-    Pagination,
-    Statistics,
-    TrainingSession,
-    TrainingSessionInput,
-    TrainingSessionListResponse,
-)
-from training_tracker.storage import (
+from training_tracker.database import (
     create_session,
     delete_session,
     get_all_sessions,
@@ -22,6 +15,13 @@ from training_tracker.storage import (
     get_session,
     session_exists,
     update_session,
+)
+from training_tracker.models import (
+    Pagination,
+    Statistics,
+    TrainingSession,
+    TrainingSessionInput,
+    TrainingSessionListResponse,
 )
 
 router = APIRouter(prefix="/v1", tags=["training-sessions"])

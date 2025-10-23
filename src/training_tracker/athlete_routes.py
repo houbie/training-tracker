@@ -5,8 +5,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
 
-from training_tracker.models import Athlete, AthleteInput, Statistics
-from training_tracker.storage import (
+from training_tracker.database import (
     athlete_exists,
     count_sessions_by_athlete,
     create_athlete,
@@ -17,6 +16,7 @@ from training_tracker.storage import (
     get_sessions_by_athlete,
     update_athlete,
 )
+from training_tracker.models import Athlete, AthleteInput, Statistics
 
 router = APIRouter(prefix="/v1/athletes", tags=["athletes"])
 
